@@ -1,0 +1,53 @@
+# Предполагаемый порядок выполнения (1–12)
+
+1. 1: sync start  
+2. 12: sync end  
+3. 6: nextTick  
+4. 4: promise.then 1  
+5. 5: promise.then 2  
+6. 2: setTimeout 0  
+7. 3: setImmediate  
+8. 7: readFile callback  
+9. 11: inner nextTick  
+10. 10: inner promise  
+11. 9: inner setImmediate  
+12. 8: inner setTimeout 0  
+
+# Объяснение порядка выполнения
+
+## 1. Синхронный код (Sync Phase)
+Выполняется первым, сверху вниз:
+- `console.log("1: sync start")` - выводится сразу.
+- `console.log("12: sync end")` - выводится последним в синхронном блоке.
+
+## 2. Микрозадачи (Microtasks Queue)
+После завершения всего синхронного кода, Event Loop обрабатывает очередь микрозадач. У них высший приоритет перед макрозадачами.
+
+- **`process.nextTick`** имеет наивысший приоритет даже среди микрозадач. Поэтому `"6: nextTick"` выполняется первым после синхронного кода.
+- Затем обрабатываются **`Promise.then`**. Так как промисы связаны цепочкой, сначала выполняется первый `.then()` - `"4: promise.then 1"`, затем второй - `"5: promise.then 2"`.
+
+## 3. Макрозадачи (Macrotasks) - фазы Event loop
+Когда очередь микрозадач пуста, Event Loop переходит к фазам макрозадач:
+
+- **Timers Phase**: Выполняются колбэки `setTimeout` и `setInterval`. Здесь срабатывает `"2: setTimeout 0"`.
+- **Check Phase**: Выполняются колбэки `setImmediate`. Здесь срабатывает `"3: setImmediate"`.
+
+## 4. I/O Callbacks (`fs.readFile`)
+Когда операция чтения файла завершается, вызывается его колбэк:
+- `"7: readFile callback"` выводится сразу при входе в колбэк.
+
+Внутри этого колбэка снова регистрируются новые асинхронные задачи. После выполнения синхронной части колбэка, Event Loop **снова очищает очередь микрозадач, но уже в контексте этого I/O колбэка**:
+
+- Сначала `process.nextTick` - `"11: inner nextTick"` (приоритет выше всех).
+- Затем `Promise.then` - `"10: inner promise"`.
+
+## 5. Завершение цикла внутри I/O колбэка
+После очистки микрозадач внутри `readFile` колбэка, Event Loop продолжает движение по фазам:
+
+- **Check Phase**: Для задач, зарегистрированных *внутри* I/O колбэка, фаза check (`setImmediate`) выполняется раньше, чем следующий круг фазы timers. Поэтому `"9: inner setImmediate"` выполняется перед `"8: inner setTimeout 0"`.
+- **Timers Phase**: В самом конце срабатывает внутренний таймер - `"8: inner setTimeout 0"`.
+
+## Dыводы:
+- **Microtasks > Macrotasks**: `nextTick` и `Promise.then` всегда выполняются перед `setTimeout`/`setImmediate`.
+- **`process.nextTick` > `Promise.then`**: `nextTick` имеет высший приоритет среди микрозадач.
+- **Фазы Event Loop**: Порядок выполнения макрозадач зависит от текущей фазы. Внутри I/O колбэка `setImmediate` (фаза check) идёт перед `setTimeout` (фаза timers следующего цикла).
