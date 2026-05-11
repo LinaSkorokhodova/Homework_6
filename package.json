@@ -1,0 +1,29 @@
+{
+  "name": "homework_6",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/tasks/fastify-basic/server.js",
+    "start:crud": "node src/tasks/fastify-crud/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LinaSkorokhodova/Homework_6.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LinaSkorokhodova/Homework_6/issues"
+  },
+  "homepage": "https://github.com/LinaSkorokhodova/Homework_6#readme",
+  "dependencies": {
+    "fastify": "^5.8.5"
+  }
+
+}
+
+
