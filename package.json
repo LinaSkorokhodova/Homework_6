@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node src/tasks/fastify-basic/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/LinaSkorokhodova/Homework_6/issues"
   },
-  "homepage": "https://github.com/LinaSkorokhodova/Homework_6#readme"
+  "homepage": "https://github.com/LinaSkorokhodova/Homework_6#readme",
+  "dependencies": {
+    "fastify": "^5.8.5"
+  }
+
 }
+
+
